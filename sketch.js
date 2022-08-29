@@ -46,7 +46,7 @@ function draw() {
     follower.update();
   }
   vehicle.show();
-  vehicle.edges();
+  vehicle.reverseAtEdges();
   follower.show();
   follower.edges();
 }

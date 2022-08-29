@@ -29,7 +29,7 @@ class Vehicle {
       this.wanderData = {
         theta : 0,
         maxTheta : PI / 6,
-        show: true
+        show: false
       };
     }
   }
@@ -82,8 +82,9 @@ class Vehicle {
     prediction.mult(30);
     target.add(prediction);
     target.add(offset);
-    fill(0, 255, 0);
-    circle(target.x, target.y, 36);
+    stroke(0,0,255);
+    line(target.x - 10, target.y, target.x + 10, target.y);
+    line(target.x, target.y - 10, target.x, target.y + 10);
     return this.seek(target);
   }
 
@@ -157,7 +158,7 @@ class Vehicle {
       endShape();
     }
 
-    if (this.wanderData !== undefined && this.wanderData.show) {
+    if (this.wanderData && this.wanderData.show) {
       noFill();
       stroke(255, 200,0);
       circle(this.wanderData.point1.x, this.wanderData.point1.y, this.wanderData.radius * 2);
@@ -200,6 +201,19 @@ class Vehicle {
     if (hitEdge) {
       this.currentPath = [];
       this.paths.push(this.currentPath);
+    }
+  }
+
+  reverseAtEdges() {
+    const buffer = 20;
+    if (this.pos.x > width - buffer) {
+      this.vel.rotate(PI / 2);
+    } else if (this.pos.x < buffer) {
+      this.vel.rotate(PI / 2);
+    } else if (this.pos.y > height - buffer) {
+      this.vel.rotate(PI / 2);
+    } else if (this.pos.y < buffer) {
+      this.vel.rotate(PI / 2);
     }
   }
 
