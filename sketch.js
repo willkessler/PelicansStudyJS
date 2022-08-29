@@ -14,6 +14,8 @@
 let vehicle;
 let follower;
 let pursuit;
+let arrival;
+let edgeForce;
 
 let slider1, slider2, slider3;
 let pause = false;
@@ -28,7 +30,7 @@ function mouseReleased() {
 function setup() {
   createCanvas(windowWidth, windowHeight - 25);
   vehicle = new Vehicle(width / 2, height / 2, 2, true);
-  follower = new Vehicle(width / 4, height / 4, 4, false);
+  follower = new Vehicle(random(0,1) * width, random(0,1) * height, 6, false);
   pursuitOffset = new p5.Vector(0,-100);
   slider1 = createSlider(100, 250, 150);
   slider2 = createSlider(50, 100, 50);
@@ -39,14 +41,17 @@ function draw() {
   background(0);
 
   vehicle.wander();
-  pursuit = follower.pursue(vehicle, true);
-  follower.applyForce(pursuit, pursuitOffset);
+  //pursuit = follower.pursue(vehicle, true);
+  arrival = follower.arrive(vehicle, 30);
+  follower.applyForce(arrival, pursuitOffset);
   if (!pause) {
     vehicle.update();
     follower.update();
   }
   vehicle.show();
-  vehicle.reverseAtEdges();
+  edgeForce = vehicle.repulseAtEdges();
+  console.log(edgeForce);
+  vehicle.applyForce(edgeForce);
   follower.show();
   follower.edges();
 }

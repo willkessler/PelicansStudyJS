@@ -14,11 +14,12 @@
 class Vehicle {
   constructor(x, y, maxSpeed, wandering) {
     this.pos = createVector(x, y);
-    this.vel = createVector(1, 0);
+    this.vel = createVector(random(0,maxSpeed), random(0,maxSpeed));
     this.acc = createVector(0, 0);
     this.maxSpeed = maxSpeed;
     this.maxForce = 0.2;
     this.r = 16;
+    this.edgeBuffer = 40;
 
     this.pathSize = 150;
 
@@ -88,8 +89,17 @@ class Vehicle {
     return this.seek(target, useArrival);
   }
 
-  arrive(target) {
+  arrive(vehicle, offset) {
     // 2nd argument true enables the arrival behavior
+    let target = vehicle.pos.copy();
+    let prediction = vehicle.vel.copy();
+    prediction.rotate(3 * PI/4);
+    prediction.mult(30);
+    target.add(prediction);
+    target.add(offset);
+    stroke(0,0,255);
+    line(target.x - 10, target.y, target.x + 10, target.y);
+    line(target.x, target.y - 10, target.x, target.y + 10);
     return this.seek(target, true);
   }
 
@@ -101,7 +111,7 @@ class Vehicle {
     let force = p5.Vector.sub(target, this.pos);
     let desiredSpeed = this.maxSpeed;
     if (arrival) {
-      let slowRadius = 200;
+      let slowRadius = 50;
       let distance = force.mag();
       if (distance < slowRadius) {
         desiredSpeed = map(distance, 0, slowRadius, 0, this.maxSpeed);
@@ -205,16 +215,39 @@ class Vehicle {
   }
 
   reverseAtEdges() {
-    const buffer = 20;
-    if (this.pos.x > width - buffer) {
+    if (this.pos.x > width - this.edgeBuffer) {
       this.vel.rotate(PI / 2);
-    } else if (this.pos.x < buffer) {
+    } else if (this.pos.x < this.edgeBuffer) {
       this.vel.rotate(PI / 2);
-    } else if (this.pos.y > height - buffer) {
+    } else if (this.pos.y > height - this.edgeBuffer) {
       this.vel.rotate(PI / 2);
-    } else if (this.pos.y < buffer) {
+    } else if (this.pos.y < this.edgeBuffer) {
       this.vel.rotate(PI / 2);
     }
+  }
+
+  // create "repulse" that will *slowly* direct vehicle away from edges
+  repulseAtEdges() {
+    let repulseVector = new p5.Vector(0,0);
+    let edgeDistance = 1;
+    if (this.pos.x > width - this.edgeBuffer) {
+      edgeDistance = width - this.pos.x;
+      repulseVector.set(-1,0);
+    } else if (this.pos.x < this.edgeBuffer) {
+      edgeDistance = this.pos.x;
+      repulseVector.set(1,0);
+    } else if (this.pos.y > height - this.edgeBuffer) {
+      edgeDistance = height - this.pos.y;
+      repulseVector.set(0,-1);
+    } else if (this.pos.y < this.edgeBuffer) {
+      edgeDistance = this.pos.y;
+      repulseVector.set(0,1);
+    }
+
+    repulseVector.setMag(edgeDistance);
+    repulseVector.limit(this.maxForce);
+//    repulseVector.add(this.pos);
+    return repulseVector;
   }
 
 }
