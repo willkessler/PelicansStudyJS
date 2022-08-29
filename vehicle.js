@@ -14,12 +14,13 @@
 class Vehicle {
   constructor(x, y, maxSpeed, wandering) {
     this.pos = createVector(x, y);
-    this.vel = createVector(random(0,maxSpeed), random(0,maxSpeed));
+    //this.vel = createVector(random(0,maxSpeed), random(0,maxSpeed));
+    this.vel = createVector(1,0);
     this.acc = createVector(0, 0);
     this.maxSpeed = maxSpeed;
     this.maxForce = 0.2;
     this.r = 16;
-    this.edgeBuffer = 40;
+    this.edgeBuffer = 50;
 
     this.pathSize = 150;
 
@@ -229,24 +230,34 @@ class Vehicle {
   // create "repulse" that will *slowly* direct vehicle away from edges
   repulseAtEdges() {
     let repulseVector = new p5.Vector(0,0);
+    let edgeRepulseVector = new p5.Vector(0,0);
     let edgeDistance = 1;
     if (this.pos.x > width - this.edgeBuffer) {
-      edgeDistance = width - this.pos.x;
-      repulseVector.set(-1,0);
-    } else if (this.pos.x < this.edgeBuffer) {
-      edgeDistance = this.pos.x;
-      repulseVector.set(1,0);
-    } else if (this.pos.y > height - this.edgeBuffer) {
-      edgeDistance = height - this.pos.y;
-      repulseVector.set(0,-1);
-    } else if (this.pos.y < this.edgeBuffer) {
-      edgeDistance = this.pos.y;
-      repulseVector.set(0,1);
+      edgeDistance = this.edgeBuffer / (width - this.pos.x);
+      edgeRepulseVector.set(-1,0);
+      edgeRepulseVector.setMag(edgeDistance);
+      repulseVector.add(edgeRepulseVector);
     }
+    if (this.pos.x < this.edgeBuffer) {
+      edgeDistance = this.edgeBuffer / this.pos.x;
+      edgeRepulseVector.set(1,0);
+      edgeRepulseVector.setMag(edgeDistance);
+      repulseVector.add(edgeRepulseVector);
+    }
+    if (this.pos.y > height - this.edgeBuffer) {
+      edgeDistance = this.edgeBuffer / (height - this.pos.y);
+      edgeRepulseVector.set(0,-1);
+      edgeRepulseVector.setMag(edgeDistance);
+      repulseVector.add(edgeRepulseVector);
+    }
+    if (this.pos.y < this.edgeBuffer) {
+      edgeDistance = this.edgeBuffer / this.pos.y;
+      edgeRepulseVector.set(0,1);
+      edgeRepulseVector.setMag(edgeDistance);
+      repulseVector.add(edgeRepulseVector);
+    }
+    repulseVector.limit(this.maxForce * 2);
 
-    repulseVector.setMag(edgeDistance);
-    repulseVector.limit(this.maxForce);
-//    repulseVector.add(this.pos);
     return repulseVector;
   }
 

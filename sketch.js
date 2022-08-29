@@ -50,7 +50,7 @@ function draw() {
   }
   vehicle.show();
   edgeForce = vehicle.repulseAtEdges();
-  console.log(edgeForce);
+  //console.log(edgeForce);
   vehicle.applyForce(edgeForce);
   follower.show();
   follower.edges();
