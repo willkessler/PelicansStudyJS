@@ -75,7 +75,7 @@ class Vehicle {
     return pursuit;
   }
 
-  pursue(vehicle, offset) {
+  pursue(vehicle, offset, useArrival) {
     let target = vehicle.pos.copy();
     let prediction = vehicle.vel.copy();
     prediction.rotate(3 * PI/4);
@@ -85,7 +85,7 @@ class Vehicle {
     stroke(0,0,255);
     line(target.x - 10, target.y, target.x + 10, target.y);
     line(target.x, target.y - 10, target.x, target.y + 10);
-    return this.seek(target);
+    return this.seek(target, useArrival);
   }
 
   arrive(target) {
@@ -101,7 +101,7 @@ class Vehicle {
     let force = p5.Vector.sub(target, this.pos);
     let desiredSpeed = this.maxSpeed;
     if (arrival) {
-      let slowRadius = 100;
+      let slowRadius = 200;
       let distance = force.mag();
       if (distance < slowRadius) {
         desiredSpeed = map(distance, 0, slowRadius, 0, this.maxSpeed);

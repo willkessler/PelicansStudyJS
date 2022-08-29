@@ -39,7 +39,7 @@ function draw() {
   background(0);
 
   vehicle.wander();
-  pursuit = follower.pursue(vehicle);
+  pursuit = follower.pursue(vehicle, true);
   follower.applyForce(pursuit, pursuitOffset);
   if (!pause) {
     vehicle.update();
