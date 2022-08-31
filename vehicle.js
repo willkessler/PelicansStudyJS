@@ -20,7 +20,7 @@ class Vehicle {
     this.maxSpeed = maxSpeed;
     this.maxForce = 0.2;
     this.r = 16;
-    this.edgeBuffer = 100;
+    this.edgeBuffer = 50;
 
     this.pathSize = 150;
 
@@ -234,35 +234,35 @@ class Vehicle {
     let edgeDistance = 1;
     let repulsing = false;
     if (this.pos.x > width - this.edgeBuffer) {
-      edgeDistance = width - this.pos.x;
+      edgeDistance = Math.abs(width - this.pos.x);
       edgeRepulseVector.set(-1,0);
-      edgeRepulseVector.setMag(1 / edgeDistance);
+      edgeRepulseVector.setMag(1 - (edgeDistance / this.edgeBuffer)) * this.maxSpeed;
       repulseVector.add(edgeRepulseVector);
       repulsing = true;
     }
     if (this.pos.x < this.edgeBuffer) {
       edgeDistance = this.pos.x;
       edgeRepulseVector.set(1,0);
-      edgeRepulseVector.setMag(1 / edgeDistance);
+      edgeRepulseVector.setMag(1 - (edgeDistance / this.edgeBuffer)) * this.maxSpeed;
       repulsing = true;
       repulseVector.add(edgeRepulseVector);
     }
     if (this.pos.y > height - this.edgeBuffer) {
-      edgeDistance = height - this.pos.y;
+      edgeDistance = Math.abs(height - this.pos.y);
       edgeRepulseVector.set(0,-1);
-      edgeRepulseVector.setMag(1 / edgeDistance);
+      edgeRepulseVector.setMag(1 - (edgeDistance / this.edgeBuffer)) * this.maxSpeed;
       repulseVector.add(edgeRepulseVector);
       repulsing = true;
     }
     if (this.pos.y < this.edgeBuffer) {
       edgeDistance = this.pos.y;
       edgeRepulseVector.set(0,1);
-      edgeRepulseVector.setMag(1 / edgeDistance);
+      edgeRepulseVector.setMag(1 - (edgeDistance / this.edgeBuffer)) * this.maxSpeed;
       repulseVector.add(edgeRepulseVector);
       repulsing = true;
     }
-    if (repulsing) console.log(repulseVector);
-    repulseVector.limit(this.maxForce * 2);
+    repulseVector.limit(this.maxForce * 10);
+    // if (repulsing) console.log(repulseVector);
 
     if (this.pos.x < 0 || this.pos.x > width || this.pos.y < 0 || this.pos.y > height) {
       repulseVector.rotate(PI);

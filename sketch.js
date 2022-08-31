@@ -29,7 +29,7 @@ function mouseReleased() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight - 25);
-  vehicle = new Vehicle(width / 2, height / 2, 2, true);
+  vehicle = new Vehicle(width / 2, height / 2, 4, true);
   follower = new Vehicle(random(0,1) * width, random(0,1) * height, 6, false);
   pursuitOffset = new p5.Vector(0,-100);
   slider1 = createSlider(100, 250, 150);
