@@ -22,7 +22,7 @@ class Vehicle {
     this.r = 16;
     this.edgeBuffer = 100;
 
-    this.pathSize = 150;
+    this.pathSize = 50;
 
     this.currentPath = [];
     this.paths = [this.currentPath];
@@ -80,7 +80,7 @@ class Vehicle {
   pursue(vehicle, offset, useArrival) {
     let target = vehicle.pos.copy();
     let prediction = vehicle.vel.copy();
-    prediction.rotate(3 * PI/4);
+    prediction.rotate(PI/4);
     prediction.mult(30);
     target.add(prediction);
     target.add(offset);
@@ -90,14 +90,14 @@ class Vehicle {
     return this.seek(target, useArrival);
   }
 
-  arrive(vehicle, offset) {
+  arrive(vehicle) {
     // 2nd argument true enables the arrival behavior
     let target = vehicle.pos.copy();
     let prediction = vehicle.vel.copy();
-    prediction.rotate(3 * PI/4);
-    prediction.mult(30);
+    prediction.normalize();
+    prediction.rotate(5 * PI/8);
+    prediction.mult(80);
     target.add(prediction);
-    target.add(offset);
     stroke(0,0,255);
     line(target.x - 10, target.y, target.x + 10, target.y);
     line(target.x, target.y - 10, target.x, target.y + 10);

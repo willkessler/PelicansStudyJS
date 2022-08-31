@@ -30,7 +30,7 @@ function mouseReleased() {
 function setup() {
   createCanvas(windowWidth, windowHeight - 25);
   vehicle = new Vehicle(width / 2, height / 2, 3, true);
-  follower = new Vehicle(random(0,1) * width, random(0,1) * height, 6, false);
+  follower = new Vehicle(random(0,1) * width, random(0,1) * height, 8, false);
   pursuitOffset = new p5.Vector(0,-100);
   slider1 = createSlider(100, 250, 150);
   slider2 = createSlider(50, 100, 50);
@@ -42,7 +42,7 @@ function draw() {
 
   vehicle.wander();
   //pursuit = follower.pursue(vehicle, true);
-  arrival = follower.arrive(vehicle, 30);
+  arrival = follower.arrive(vehicle);
   follower.applyForce(arrival, pursuitOffset);
   if (!pause) {
     vehicle.update();
