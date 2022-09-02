@@ -11,21 +11,31 @@
 // Displacement: https://editor.p5js.org/codingtrain/sketches/VdHUvgHkm
 // Perlin Noise: https://editor.p5js.org/codingtrain/sketches/XH2DtikuI
 
+// Todo:
+// make follower "see" the lead, and distance check
+// make follower wander
+// make lead not wander when near edges
+// make follower be able to see across window edges so it doesn't zoom off
+// make lead "get tired" so it can become a follower
+
 class Vehicle {
   constructor(x, y, maxSpeed, wandering) {
     this.pos = createVector(x, y);
     //this.vel = createVector(random(0,maxSpeed), random(0,maxSpeed));
-    this.vel = createVector(0,1);
+    this.vel = createVector(1,0);
     this.acc = createVector(0, 0);
     this.maxSpeed = maxSpeed;
-    this.maxForce = 0.2;
+    this.maxForce = 1;
     this.r = 16;
-    this.edgeBuffer = 100;
+    this.edgeBuffer = 25;
+    this.lineHeight = 20;
+    this.numLines = (height - this.edgeBuffer * 2) / this.lineHeight;
 
     this.pathSize = 50;
 
     this.currentPath = [];
     this.paths = [this.currentPath];
+    this.debugStrings = [];
     this.wanderData = undefined;
     if (wandering) {
       this.wanderData = {
@@ -36,6 +46,25 @@ class Vehicle {
     }
   }
 
+  addDebugString(debugString) {
+    if (this.debugStrings.length > this.numLines) {
+      this.debugStrings.shift();
+    }
+    this.debugStrings.push(debugString);
+  }
+
+  showDebugStrings() {
+    let yPos = this.edgeBuffer;
+    let fillAmt = 100;
+    for (let debugString of this.debugStrings) {
+      noStroke();
+      fill(fillAmt);
+      text(debugString, this.edgeBuffer, yPos);
+      yPos += this.lineHeight;
+      fillAmt = Math.min(255, fillAmt + Math.floor(155 / this.numLines));
+    }      
+  }
+  
   clamp(val, maxVal) {
     if (Math.abs(val) > maxVal) {
       val = maxVal * Math.sign(val);
@@ -43,6 +72,29 @@ class Vehicle {
     return val;
   }
   
+  degrees(rads) {
+    return (180.0 * (rads / Math.PI ));
+  }
+  
+  // The angle between vectors is always a positive value, unless the third param is passed as true.
+  angleBetweenVectors(v1, v2, signedAngle = false) {
+    let v1norm = v1.copy();
+    let v2norm = v2.copy();
+    v1norm.normalize();
+    v2norm.normalize();
+    let dp = v1norm.dot(v2norm);
+    //let denom = v1.mag() * v2.mag();
+    //let angle = Math.acos(dp/denom);
+    let angle = Math.acos(dp);
+    if (signedAngle) {
+      let cp = v1norm.cross(v2norm);
+      if (Math.sign(cp.z) === 1) {
+        angle *= -1;
+      }
+    }
+    return this.degrees(angle);
+  }
+
   wander() {
     let wanderPoint = this.vel.copy();
     wanderPoint.setMag(slider1.value());
@@ -134,7 +186,11 @@ class Vehicle {
     this.pos.add(this.vel);
     this.acc.set(0, 0);
 
-    this.currentPath.push(this.pos.copy());
+    let backOfTriangle = this.pos.copy();
+    let reverseVel = this.vel.copy();
+    reverseVel.normalize().mult(-this.r * 3 / 2);
+    backOfTriangle.add(reverseVel);
+    this.currentPath.push(backOfTriangle.copy());
 
     // Count positions
     let total = 0;
@@ -157,7 +213,13 @@ class Vehicle {
     push();
     translate(this.pos.x, this.pos.y);
     rotate(this.vel.heading());
-    triangle(-this.r, -this.r / 2, -this.r, this.r / 2, this.r, 0);
+
+    // triangle centered on this.pos
+    //triangle(-this.r, -this.r / 2, -this.r, this.r / 2, this.r, 0);
+
+    // triangle with its tip on this.pos
+    let tSize = -this.r * 3 / 2;
+    triangle(tSize, -this.r / 2, tSize, this.r / 2, 0, 0);
     pop();
 
     for (let path of this.paths) {
@@ -168,6 +230,7 @@ class Vehicle {
       }
       endShape();
     }
+
 
     if (this.wanderData && this.wanderData.show) {
       noFill();
@@ -187,8 +250,9 @@ class Vehicle {
       stroke(255, 150);
       line(this.pos.x, this.pos.y, this.wanderData.point2.x, this.wanderData.point2.y);
       pop();
-
     }
+
+    this.showDebugStrings();
     
   }
 
@@ -227,44 +291,69 @@ class Vehicle {
     }
   }
 
-  // create "repulse" that will *slowly* direct vehicle away from edges
+  // Simulate "repulsion" that will *slowly* direct vehicle away from edges
   repulseAtEdges() {
     let repulseVector = new p5.Vector(0,0);
     let edgeRepulseVector = new p5.Vector(0,0);
     let edgeDistance = 1;
     let repulsing = false;
-    const expBase = 1.1;
+    let angleWithEdgeVector;
+    let angleFactor;
+    let powVal;
+    const aVal = 0.1;
+    const expBase = 1.3;
     if (this.pos.x > width - this.edgeBuffer) {
       edgeDistance = Math.abs(this.pos.x - (width - this.edgeBuffer));
       edgeRepulseVector.set(-1,0);
-      edgeRepulseVector.setMag(Math.pow(expBase, edgeDistance));
+      powVal = aVal * Math.pow(expBase, edgeDistance);
+      edgeRepulseVector.setMag(powVal);
+      angleWithEdgeVector = this.angleBetweenVectors(this.vel, edgeRepulseVector);
+      angleFactor = (angleWithEdgeVector > 90 ? map(Math.abs(90 - angleWithEdgeVector),0,90,0.1,1) : 1);
+//      edgeRepulseVector.mult(angleFactor);;
       repulseVector.add(edgeRepulseVector);
       repulsing = true;
     }
     if (this.pos.x < this.edgeBuffer) {
       edgeDistance = Math.abs(this.pos.x - this.edgeBuffer);
       edgeRepulseVector.set(1,0);
-      edgeRepulseVector.setMag(Math.pow(expBase, edgeDistance));
-      repulsing = true;
+      powVal = aVal * Math.pow(expBase, edgeDistance);
+      edgeRepulseVector.setMag(powVal);
+      angleWithEdgeVector = this.angleBetweenVectors(this.vel, edgeRepulseVector);
+      angleFactor = (angleWithEdgeVector > 90 ? map(Math.abs(90 - angleWithEdgeVector), 0, 90, 0.1, 1) : 1);
+//      edgeRepulseVector.mult(angleFactor);;
       repulseVector.add(edgeRepulseVector);
+      repulsing = true;
     }
     if (this.pos.y > height - this.edgeBuffer) {
       edgeDistance = Math.abs(this.pos.y - (height - this.edgeBuffer));
       edgeRepulseVector.set(0,-1);
-      edgeRepulseVector.setMag(Math.pow(expBase, edgeDistance));
+      powVal = aVal * Math.pow(expBase, edgeDistance);
+      edgeRepulseVector.setMag(powVal);
+      angleWithEdgeVector = this.angleBetweenVectors(this.vel, edgeRepulseVector);
+      angleFactor = (angleWithEdgeVector > 90 ? map(Math.abs(90 - angleWithEdgeVector), 0, 90, 0.1, 1) : 1);
+//      edgeRepulseVector.mult(angleFactor);;
       repulseVector.add(edgeRepulseVector);
       repulsing = true;
     }
     if (this.pos.y < this.edgeBuffer) {
       edgeDistance = Math.abs(this.pos.y - this.edgeBuffer);
       edgeRepulseVector.set(0,1);
-      edgeRepulseVector.setMag(Math.pow(expBase, edgeDistance));
+      powVal = aVal * Math.pow(expBase, edgeDistance);
+      edgeRepulseVector.setMag(powVal);
+      angleWithEdgeVector = this.angleBetweenVectors(this.vel, edgeRepulseVector);
+      angleFactor = (angleWithEdgeVector > 90 ? map(Math.abs(90 - angleWithEdgeVector), 0, 90, 0.1, 1) : 1);
+//      edgeRepulseVector.mult(angleFactor);;
       repulseVector.add(edgeRepulseVector);
       repulsing = true;
     }
     repulseVector.limit(this.maxForce);
-    if (repulsing) console.log(repulseVector);
-
+    if (repulsing) {
+      this.addDebugString('expBase:' + expBase.toFixed(3) + ' : ' + 
+                          'edgeDistance:' + Math.floor(edgeDistance) + ' : ' +
+                          'powVal:' + powVal.toFixed(3) + ' : ' +
+                          'repulseVector: [' + repulseVector.x.toFixed(3) + ', ' + repulseVector.y.toFixed(3) + '] ' );
+    }
+    //console.log(expBase,edgeDistance, powVal, repulseVector);
     return repulseVector;
   }
 

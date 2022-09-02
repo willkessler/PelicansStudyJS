@@ -27,6 +27,13 @@ function mouseReleased() {
   pause = false;
 }
 
+function preload() {
+ // Ensure the .ttf or .otf font stored in the assets directory
+  // is loaded before setup() and draw() are called
+  //font = loadFont('fonts/montserrat/Montserrat-Thin.otf');
+}
+  
+
 function setup() {
   createCanvas(windowWidth, windowHeight - 25);
   vehicle = new Vehicle(width / 2, height / 2, 3, true);
@@ -35,10 +42,13 @@ function setup() {
   slider1 = createSlider(100, 250, 150);
   slider2 = createSlider(50, 100, 50);
   slider3 = createSlider(0.1, 0.5, 0.25, 0.01);
+  textFont("Courier");
+  textSize(12);
+  textAlign(LEFT);
 }
 
 function draw() {
-  background(0);
+  background(50);
 
   vehicle.wander();
   //pursuit = follower.pursue(vehicle, true);
