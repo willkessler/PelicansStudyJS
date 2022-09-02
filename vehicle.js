@@ -303,7 +303,7 @@ class Vehicle {
     const aVal = 0.1;
     const expBase = 1.3;
     if (this.pos.x > width - this.edgeBuffer) {
-      edgeDistance = Math.abs(this.pos.x - (width - this.edgeBuffer));
+      edgeDistance = Math.abs(width - this.pos.x);
       edgeRepulseVector.set(-1,0);
       powVal = aVal * Math.pow(expBase, edgeDistance);
       edgeRepulseVector.setMag(powVal);
@@ -314,7 +314,7 @@ class Vehicle {
       repulsing = true;
     }
     if (this.pos.x < this.edgeBuffer) {
-      edgeDistance = Math.abs(this.pos.x - this.edgeBuffer);
+      edgeDistance = Math.abs(this.pos.x);
       edgeRepulseVector.set(1,0);
       powVal = aVal * Math.pow(expBase, edgeDistance);
       edgeRepulseVector.setMag(powVal);
@@ -325,7 +325,7 @@ class Vehicle {
       repulsing = true;
     }
     if (this.pos.y > height - this.edgeBuffer) {
-      edgeDistance = Math.abs(this.pos.y - (height - this.edgeBuffer));
+      edgeDistance = Math.abs(height - this.pos.y);
       edgeRepulseVector.set(0,-1);
       powVal = aVal * Math.pow(expBase, edgeDistance);
       edgeRepulseVector.setMag(powVal);
@@ -336,7 +336,7 @@ class Vehicle {
       repulsing = true;
     }
     if (this.pos.y < this.edgeBuffer) {
-      edgeDistance = Math.abs(this.pos.y - this.edgeBuffer);
+      edgeDistance = Math.abs(this.pos.y);
       edgeRepulseVector.set(0,1);
       powVal = aVal * Math.pow(expBase, edgeDistance);
       edgeRepulseVector.setMag(powVal);
