@@ -50,7 +50,9 @@ function setup() {
 function draw() {
   background(50);
 
-  vehicle.wander();
+  if (!vehicle.isWithinEdgeBuffer()) {
+    vehicle.wander();
+  }
   //pursuit = follower.pursue(vehicle, true);
   arrival = follower.arrive(vehicle);
   follower.applyForce(arrival, pursuitOffset);

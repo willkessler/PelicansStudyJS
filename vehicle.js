@@ -12,9 +12,9 @@
 // Perlin Noise: https://editor.p5js.org/codingtrain/sketches/XH2DtikuI
 
 // Todo:
+// make lead not wander when near edges
 // make follower "see" the lead, and distance check
 // make follower wander
-// make lead not wander when near edges
 // make follower be able to see across window edges so it doesn't zoom off
 // make lead "get tired" so it can become a follower
 
@@ -291,6 +291,13 @@ class Vehicle {
     }
   }
 
+  isWithinEdgeBuffer () {
+    return ( (this.pos.x > width - this.edgeBuffer) ||
+             (this.pos.x < this.edgeBuffer) ||
+             (this.pos.y > height - this.edgeBuffer) ||
+             (this.pos.y < this.edgeBuffer) );
+  }
+
   // Simulate "repulsion" that will *slowly* direct vehicle away from edges
   repulseAtEdges() {
     let repulseVector = new p5.Vector(0,0);
@@ -301,7 +308,7 @@ class Vehicle {
     let angleFactor;
     let powVal;
     const aVal = 0.1;
-    const expBase = 1.3;
+    const expBase = 1.005;
     if (this.pos.x > width - this.edgeBuffer) {
       edgeDistance = Math.abs(width - this.pos.x);
       edgeRepulseVector.set(-1,0);
