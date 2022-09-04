@@ -12,9 +12,9 @@
 // Perlin Noise: https://editor.p5js.org/codingtrain/sketches/XH2DtikuI
 
 // Todo:
-// make lead not wander when near edges
+// X make lead not wander when near edges
 // make follower "see" the lead, and distance check
-// make follower wander
+// make follower wander when it can't see the lead
 // make follower be able to see across window edges so it doesn't zoom off
 // make lead "get tired" so it can become a follower
 
@@ -231,6 +231,11 @@ class Vehicle {
       endShape();
     }
 
+    // render a box representing the edgebuffer
+    stroke(0,75,0);
+    noFill();
+    drawingContext.setLineDash([3,3]);
+    rect(this.edgeBuffer, this.edgeBuffer, width - this.edgeBuffer * 2, height - this.edgeBuffer * 2);
 
     if (this.wanderData && this.wanderData.show) {
       noFill();
@@ -304,8 +309,6 @@ class Vehicle {
     let edgeRepulseVector = new p5.Vector(0,0);
     let edgeDistance = 1;
     let repulsing = false;
-    let angleWithEdgeVector;
-    let angleFactor;
     let powVal;
     const aVal = 0.1;
     const expBase = 1.005;
@@ -314,9 +317,6 @@ class Vehicle {
       edgeRepulseVector.set(-1,0);
       powVal = aVal * Math.pow(expBase, edgeDistance);
       edgeRepulseVector.setMag(powVal);
-      angleWithEdgeVector = this.angleBetweenVectors(this.vel, edgeRepulseVector);
-      angleFactor = (angleWithEdgeVector > 90 ? map(Math.abs(90 - angleWithEdgeVector),0,90,0.1,1) : 1);
-//      edgeRepulseVector.mult(angleFactor);;
       repulseVector.add(edgeRepulseVector);
       repulsing = true;
     }
@@ -325,9 +325,6 @@ class Vehicle {
       edgeRepulseVector.set(1,0);
       powVal = aVal * Math.pow(expBase, edgeDistance);
       edgeRepulseVector.setMag(powVal);
-      angleWithEdgeVector = this.angleBetweenVectors(this.vel, edgeRepulseVector);
-      angleFactor = (angleWithEdgeVector > 90 ? map(Math.abs(90 - angleWithEdgeVector), 0, 90, 0.1, 1) : 1);
-//      edgeRepulseVector.mult(angleFactor);;
       repulseVector.add(edgeRepulseVector);
       repulsing = true;
     }
@@ -336,9 +333,6 @@ class Vehicle {
       edgeRepulseVector.set(0,-1);
       powVal = aVal * Math.pow(expBase, edgeDistance);
       edgeRepulseVector.setMag(powVal);
-      angleWithEdgeVector = this.angleBetweenVectors(this.vel, edgeRepulseVector);
-      angleFactor = (angleWithEdgeVector > 90 ? map(Math.abs(90 - angleWithEdgeVector), 0, 90, 0.1, 1) : 1);
-//      edgeRepulseVector.mult(angleFactor);;
       repulseVector.add(edgeRepulseVector);
       repulsing = true;
     }
@@ -347,9 +341,6 @@ class Vehicle {
       edgeRepulseVector.set(0,1);
       powVal = aVal * Math.pow(expBase, edgeDistance);
       edgeRepulseVector.setMag(powVal);
-      angleWithEdgeVector = this.angleBetweenVectors(this.vel, edgeRepulseVector);
-      angleFactor = (angleWithEdgeVector > 90 ? map(Math.abs(90 - angleWithEdgeVector), 0, 90, 0.1, 1) : 1);
-//      edgeRepulseVector.mult(angleFactor);;
       repulseVector.add(edgeRepulseVector);
       repulsing = true;
     }
@@ -360,26 +351,10 @@ class Vehicle {
                           'powVal:' + powVal.toFixed(3) + ' : ' +
                           'repulseVector: [' + repulseVector.x.toFixed(3) + ', ' + repulseVector.y.toFixed(3) + '] ' );
     }
+    // now displaying this info in canvas
     //console.log(expBase,edgeDistance, powVal, repulseVector);
     return repulseVector;
   }
 
 }
 
-class Target extends Vehicle {
-  constructor(x, y) {
-    super(x, y);
-    this.vel = p5.Vector.random2D();
-    this.vel.mult(5);
-  }
-
-  show() {
-    stroke(255);
-    strokeWeight(2);
-    fill("#F063A4");
-    push();
-    translate(this.pos.x, this.pos.y);
-    circle(0, 0, this.r * 2);
-    pop();
-  }
-}
