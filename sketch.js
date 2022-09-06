@@ -54,8 +54,10 @@ function draw() {
     vehicle.wander();
   }
   //pursuit = follower.pursue(vehicle, true);
-  arrival = follower.arrive(vehicle);
-  follower.applyForce(arrival, pursuitOffset);
+  if (follower.canSee(vehicle)) {
+    arrival = follower.arrive(vehicle);
+    follower.applyForce(arrival, pursuitOffset);
+  }
   if (!pause) {
     vehicle.update();
     follower.update();

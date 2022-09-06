@@ -13,7 +13,8 @@
 
 // Todo:
 // X make lead not wander when near edges
-// make follower "see" the lead, and distance check
+// X draw green box representing edgeBuffer
+// make follower "see" the lead, and distance check before following
 // make follower wander when it can't see the lead
 // make follower be able to see across window edges so it doesn't zoom off
 // make lead "get tired" so it can become a follower
@@ -95,6 +96,12 @@ class Vehicle {
     return this.degrees(angle);
   }
 
+  // Whether or not a given vehicle is within "viewing distance" and within "viewing cone" of this vehicle.
+  canSee(vehicle) {
+    const angleBetweenVehicles = this.angleBetweenVectors(this.pos, vehicle.pos, true);
+    
+  }
+  
   wander() {
     let wanderPoint = this.vel.copy();
     wanderPoint.setMag(slider1.value());
@@ -180,86 +187,6 @@ class Vehicle {
     this.acc.add(force);
   }
 
-  update() {
-    this.vel.add(this.acc);
-    this.vel.limit(this.maxSpeed);
-    this.pos.add(this.vel);
-    this.acc.set(0, 0);
-
-    let backOfTriangle = this.pos.copy();
-    let reverseVel = this.vel.copy();
-    reverseVel.normalize().mult(-this.r * 3 / 2);
-    backOfTriangle.add(reverseVel);
-    this.currentPath.push(backOfTriangle.copy());
-
-    // Count positions
-    let total = 0;
-    for (let path of this.paths) {
-      total += path.length;
-    }
-
-   if (total > this.pathSize) {
-      this.paths[0].shift();
-      if (this.paths[0].length === 0) {
-        this.paths.shift();
-       }
-    }
-  }
-
-  show() {
-    stroke(255);
-    strokeWeight(2);
-    fill(255);
-    push();
-    translate(this.pos.x, this.pos.y);
-    rotate(this.vel.heading());
-
-    // triangle centered on this.pos
-    //triangle(-this.r, -this.r / 2, -this.r, this.r / 2, this.r, 0);
-
-    // triangle with its tip on this.pos
-    let tSize = -this.r * 3 / 2;
-    triangle(tSize, -this.r / 2, tSize, this.r / 2, 0, 0);
-    pop();
-
-    for (let path of this.paths) {
-      beginShape();
-      noFill();
-      for (let v of path) {
-        vertex(v.x, v.y);
-      }
-      endShape();
-    }
-
-    // render a box representing the edgebuffer
-    stroke(0,75,0);
-    noFill();
-    drawingContext.setLineDash([3,3]);
-    rect(this.edgeBuffer, this.edgeBuffer, width - this.edgeBuffer * 2, height - this.edgeBuffer * 2);
-
-    if (this.wanderData && this.wanderData.show) {
-      noFill();
-      stroke(255, 200,0);
-      circle(this.wanderData.point1.x, this.wanderData.point1.y, this.wanderData.radius * 2);
-      push();
-      stroke(255, 100,0);
-      line(this.pos.x, this.pos.y, this.wanderData.point1.x, this.wanderData.point1.y);
-      pop();
-      
-      fill(0, 255, 0);
-      noStroke();
-
-      push();
-      circle(this.wanderData.point2.x, this.wanderData.point2.y, slider3.value() * 100);
-
-      stroke(255, 150);
-      line(this.pos.x, this.pos.y, this.wanderData.point2.x, this.wanderData.point2.y);
-      pop();
-    }
-
-    this.showDebugStrings();
-    
-  }
 
   edges() {
     let hitEdge = false;
@@ -354,6 +281,88 @@ class Vehicle {
     // now displaying this info in canvas
     //console.log(expBase,edgeDistance, powVal, repulseVector);
     return repulseVector;
+  }
+
+  update() {
+    this.vel.add(this.acc);
+    this.vel.limit(this.maxSpeed);
+    this.pos.add(this.vel);
+    this.acc.set(0, 0);
+
+    let backOfTriangle = this.pos.copy();
+    let reverseVel = this.vel.copy();
+    reverseVel.normalize().mult(-this.r * 3 / 2);
+    backOfTriangle.add(reverseVel);
+    this.currentPath.push(backOfTriangle.copy());
+
+    // Count positions
+    let total = 0;
+    for (let path of this.paths) {
+      total += path.length;
+    }
+
+   if (total > this.pathSize) {
+      this.paths[0].shift();
+      if (this.paths[0].length === 0) {
+        this.paths.shift();
+       }
+    }
+  }
+
+  show() {
+    stroke(255);
+    strokeWeight(2);
+    fill(255);
+    push();
+    translate(this.pos.x, this.pos.y);
+    rotate(this.vel.heading());
+
+    // triangle centered on this.pos
+    //triangle(-this.r, -this.r / 2, -this.r, this.r / 2, this.r, 0);
+
+    // triangle with its tip on this.pos
+    let tSize = -this.r * 3 / 2;
+    triangle(tSize, -this.r / 2, tSize, this.r / 2, 0, 0);
+    pop();
+
+    for (let path of this.paths) {
+      beginShape();
+      noFill();
+      for (let v of path) {
+        vertex(v.x, v.y);
+      }
+      endShape();
+    }
+
+    // render a box representing the edgebuffer
+    stroke(0,75,0);
+    noFill();
+    drawingContext.setLineDash([3,3]);
+    rect(this.edgeBuffer, this.edgeBuffer, width - this.edgeBuffer * 2, height - this.edgeBuffer * 2);
+
+    if (this.wanderData && this.wanderData.show) {
+      noFill();
+      stroke(255, 200,0);
+      circle(this.wanderData.point1.x, this.wanderData.point1.y, this.wanderData.radius * 2);
+      push();
+      stroke(255, 100,0);
+      line(this.pos.x, this.pos.y, this.wanderData.point1.x, this.wanderData.point1.y);
+      pop();
+      
+      fill(0, 255, 0);
+      noStroke();
+
+      push();
+      circle(this.wanderData.point2.x, this.wanderData.point2.y, slider3.value() * 100);
+
+      stroke(255, 150);
+      line(this.pos.x, this.pos.y, this.wanderData.point2.x, this.wanderData.point2.y);
+      pop();
+    }
+    drawingContext.setLineDash([1]);
+
+    this.showDebugStrings();
+    
   }
 
 }
