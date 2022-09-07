@@ -19,7 +19,7 @@
 // make follower be able to see across window edges so it doesn't zoom off
 // make lead "get tired" so it can become a follower
 
- // pass in settings object: x, y, maxSpeed, wandering, drawViewCircle
+// pass in settings object: x, y, maxSpeed, maxWanderSpeed, vehicleColor, wandering, drawViewCircle
 class Vehicle {
   constructor(settings) {
     this.pos = createVector(settings.x, settings.y);
@@ -27,11 +27,17 @@ class Vehicle {
     this.vel = createVector(1,0);
     this.acc = createVector(0, 0);
     this.maxSpeed = settings.maxSpeed;
+    this.maxWanderSpeed = settings.maxWanderSpeed;
     this.maxForce = 1;
-    this.maxWanderForce = 0.1;
+    this.maxWanderForce = 0.2;
     this.viewingAngle = 90;
-    this.viewingDistance = 200;
+    this.viewingDistance = 400;
     this.drawViewCircle = settings.drawViewCircle;
+    this.vehicleColor = {
+      r: settings.vehicleColor.r,
+      g: settings.vehicleColor.g,
+      b: settings.vehicleColor.b
+    };
     this.r = 16;
     this.edgeBuffer = 25;
     this.lineHeight = 20;
@@ -43,7 +49,9 @@ class Vehicle {
     this.paths = [this.currentPath];
     this.debugStrings = [];
     this.wanderData = undefined;
+    this.wandering = false;
     if (settings.wandering) {
+      this.wandering = true;
       this.wanderData = {
         theta : 0,
         maxTheta : PI / 6,
@@ -118,6 +126,12 @@ class Vehicle {
   }
   
   wander() {
+    if (!this.wandering) {
+      return;
+    }
+    if (this.isWithinEdgeBuffer()) {
+      return;
+    }
     let wanderPoint = this.vel.copy();
     wanderPoint.setMag(slider1.value());
     wanderPoint.add(this.pos);
@@ -327,9 +341,9 @@ class Vehicle {
   }
 
   show() {
-    stroke(255);
+    stroke(this.vehicleColor.r, this.vehicleColor.g, this.vehicleColor.b);
     strokeWeight(2);
-    fill(255);
+    fill(this.vehicleColor.r, this.vehicleColor.g, this.vehicleColor.b);
     push();
     translate(this.pos.x, this.pos.y);
     rotate(this.vel.heading());
@@ -353,8 +367,8 @@ class Vehicle {
 
     // render a circle around the viewing distance
     if (this.drawViewCircle) {
-      stroke(130,130,0);
-      circle(this.pos.x, this.pos.y,this.viewingDistance);
+      stroke(this.vehicleColor.r,this.vehicleColor.g,this.vehicleColor.b);
+      circle(this.pos.x, this.pos.y,this.viewingDistance * 2);
     }
     
     // render a box representing the edgebuffer

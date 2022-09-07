@@ -41,15 +41,19 @@ function setup() {
       x: width / 2, 
       y: height / 2, 
       maxSpeed: 3,
+      maxWanderSpeed: 3,
       wandering: true,
+      vehicleColor: { r: 255, g:255, b: 255 },
       drawViewCircle: false
     });
   follower = new Vehicle(
     {
       x: random(0,1) * width,
       y: random(0,1) * height, 
-      maxSpeed: 3,
-      wandering: false,
+      maxSpeed: 3.5,
+      maxWanderSpeed: 1.5,
+      wandering: true,
+      vehicleColor: { r: 50, g:50, b: 255 },
       drawViewCircle : true
     });
   pursuitOffset = new p5.Vector(0,-100);
@@ -63,29 +67,29 @@ function setup() {
 
 function draw() {
   background(50);
+  follower.edges();
 
-  if (!vehicle.isWithinEdgeBuffer()) {
-    vehicle.wander();
-  }
+  vehicle.wander();
   //pursuit = follower.pursue(vehicle, true);
-  arrival = follower.arrive(vehicle);
   if (follower.canSee(vehicle)) {
+    arrival = follower.arrive(vehicle);
     follower.applyForce(arrival, pursuitOffset);
     vehicle.addDebugString('tracking');
   } else {
     vehicle.addDebugString('wandering');
-    //follower.wander();
+    follower.wander();
   }
-  if (!pause) {
-    vehicle.update();
-    follower.update();
-  }
-  vehicle.show();
+
   edgeForce = vehicle.repulseAtEdges();
   //console.log(edgeForce);
   vehicle.applyForce(edgeForce);
   edgeForce = follower.repulseAtEdges();
   follower.applyForce(edgeForce);
+
+  if (!pause) {
+    vehicle.update();
+    follower.update();
+  }
+  vehicle.show();
   follower.show();
-  follower.edges();
 }
