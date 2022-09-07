@@ -19,14 +19,19 @@
 // make follower be able to see across window edges so it doesn't zoom off
 // make lead "get tired" so it can become a follower
 
+ // pass in settings object: x, y, maxSpeed, wandering, drawViewCircle
 class Vehicle {
-  constructor(x, y, maxSpeed, wandering) {
-    this.pos = createVector(x, y);
+  constructor(settings) {
+    this.pos = createVector(settings.x, settings.y);
     //this.vel = createVector(random(0,maxSpeed), random(0,maxSpeed));
     this.vel = createVector(1,0);
     this.acc = createVector(0, 0);
-    this.maxSpeed = maxSpeed;
+    this.maxSpeed = settings.maxSpeed;
     this.maxForce = 1;
+    this.maxWanderForce = 0.1;
+    this.viewingAngle = 90;
+    this.viewingDistance = 200;
+    this.drawViewCircle = settings.drawViewCircle;
     this.r = 16;
     this.edgeBuffer = 25;
     this.lineHeight = 20;
@@ -38,7 +43,7 @@ class Vehicle {
     this.paths = [this.currentPath];
     this.debugStrings = [];
     this.wanderData = undefined;
-    if (wandering) {
+    if (settings.wandering) {
       this.wanderData = {
         theta : 0,
         maxTheta : PI / 6,
@@ -98,8 +103,18 @@ class Vehicle {
 
   // Whether or not a given vehicle is within "viewing distance" and within "viewing cone" of this vehicle.
   canSee(vehicle) {
-    const angleBetweenVehicles = this.angleBetweenVectors(this.pos, vehicle.pos, true);
-    
+    const thisVel = this.vel.copy().normalize();
+    const targetVec = vehicle.pos.copy();
+    targetVec.sub(this.pos).normalize();
+    const angleBetweenVehicles = this.angleBetweenVectors(thisVel, targetVec, false);
+    const vecToVehicle = vehicle.pos.copy();
+    vecToVehicle.sub(this.pos);
+    const distanceToVehicle = vecToVehicle.mag();
+    if ((angleBetweenVehicles < this.viewingAngle) &&
+        (distanceToVehicle < this.viewingDistance)) {
+      return true;
+    }
+    return false;
   }
   
   wander() {
@@ -118,7 +133,7 @@ class Vehicle {
     this.wanderData.point2 = wanderPoint.copy();
 
     let steer = wanderPoint.sub(this.pos);
-    steer.setMag(this.maxForce);
+    steer.setMag(this.maxWanderForce);
     this.applyForce(steer);
 
     let displaceRange = slider3.value();
@@ -272,12 +287,14 @@ class Vehicle {
       repulsing = true;
     }
     repulseVector.limit(this.maxForce);
+/*
     if (repulsing) {
       this.addDebugString('expBase:' + expBase.toFixed(3) + ' : ' + 
                           'edgeDistance:' + Math.floor(edgeDistance) + ' : ' +
                           'powVal:' + powVal.toFixed(3) + ' : ' +
                           'repulseVector: [' + repulseVector.x.toFixed(3) + ', ' + repulseVector.y.toFixed(3) + '] ' );
     }
+*/
     // now displaying this info in canvas
     //console.log(expBase,edgeDistance, powVal, repulseVector);
     return repulseVector;
@@ -334,6 +351,12 @@ class Vehicle {
       endShape();
     }
 
+    // render a circle around the viewing distance
+    if (this.drawViewCircle) {
+      stroke(130,130,0);
+      circle(this.pos.x, this.pos.y,this.viewingDistance);
+    }
+    
     // render a box representing the edgebuffer
     stroke(0,75,0);
     noFill();
@@ -366,4 +389,3 @@ class Vehicle {
   }
 
 }
-

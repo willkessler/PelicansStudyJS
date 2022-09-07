@@ -36,8 +36,22 @@ function preload() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight - 25);
-  vehicle = new Vehicle(width / 2, height / 2, 3, true);
-  follower = new Vehicle(random(0,1) * width, random(0,1) * height, 8, false);
+  vehicle = new Vehicle(
+    {
+      x: width / 2, 
+      y: height / 2, 
+      maxSpeed: 3,
+      wandering: true,
+      drawViewCircle: false
+    });
+  follower = new Vehicle(
+    {
+      x: random(0,1) * width,
+      y: random(0,1) * height, 
+      maxSpeed: 3,
+      wandering: false,
+      drawViewCircle : true
+    });
   pursuitOffset = new p5.Vector(0,-100);
   slider1 = createSlider(100, 250, 150);
   slider2 = createSlider(50, 100, 50);
@@ -54,9 +68,13 @@ function draw() {
     vehicle.wander();
   }
   //pursuit = follower.pursue(vehicle, true);
+  arrival = follower.arrive(vehicle);
   if (follower.canSee(vehicle)) {
-    arrival = follower.arrive(vehicle);
     follower.applyForce(arrival, pursuitOffset);
+    vehicle.addDebugString('tracking');
+  } else {
+    vehicle.addDebugString('wandering');
+    //follower.wander();
   }
   if (!pause) {
     vehicle.update();
@@ -66,6 +84,8 @@ function draw() {
   edgeForce = vehicle.repulseAtEdges();
   //console.log(edgeForce);
   vehicle.applyForce(edgeForce);
+  edgeForce = follower.repulseAtEdges();
+  follower.applyForce(edgeForce);
   follower.show();
   follower.edges();
 }
