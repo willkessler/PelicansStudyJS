@@ -29,13 +29,13 @@ class Spring {
   show() {
     strokeWeight(4);
     stroke(255);
-		drawingContext.setLineDash([5, 10, 30, 10]);  // cf https://editor.p5js.org/squishynotions/sketches/Ax195WTdz
+    drawingContext.setLineDash([5, 10, 30, 10]);  // cf https://editor.p5js.org/squishynotions/sketches/Ax195WTdz
     line(
       this.a.position.x,
       this.a.position.y,
       this.b.position.x,
       this.b.position.y
     );
-		drawingContext.setLineDash([1]);
+    drawingContext.setLineDash([1]);
   }
 }

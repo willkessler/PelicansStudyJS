@@ -14,9 +14,10 @@ class Particle {
     this.velocity = createVector(0, 0, 0);
     this.position = createVector(partData.position.x, partData.position.y, 0);
     this.mass = 1; // Let's do something better here!
+    this.r = 16;
     this.dampener = partData.dampener;
     this.color = partData.color;
-		this.particleSize = partData.particleSize;
+    this.particleSize = partData.particleSize;
   }
 
   applyForce(force) {
@@ -34,17 +35,33 @@ class Particle {
     this.acceleration.mult(0);
   }
 	
-	setPosition(newX,newY,newZ) {
-		this.position.x = newX;
-		this.position.y = newY;
-		this.position.z = newZ;
-	}
+  setPosition(newX,newY,newZ) {
+    this.position.x = newX;
+    this.position.y = newY;
+    this.position.z = newZ;
+  }
 
-  // Method to display
+  // Show particle as arrow going in the direction of the velocity
   show() {
-    stroke(255);
+    stroke(this.color.r, this.color.g, this.color.b);
     strokeWeight(2);
     fill(this.color.r, this.color.g, this.color.b);
-    ellipse(this.position.x, this.position.y, this.particleSize);
+    push();
+    translate(this.position.x, this.position.y);
+    rotate(this.velocity.heading());
+
+    // triangle centered on this.pos
+    //triangle(-this.r, -this.r / 2, -this.r, this.r / 2, this.r, 0);
+
+    // triangle with its tip on this.pos
+    let tSize = -this.r * 3 / 2;
+    triangle(tSize, -this.r / 2, tSize, this.r / 2, 0, 0);
+    pop();
+
+    // Old ellipse way
+    // stroke(255);
+    // strokeWeight(2);
+    // fill(this.color.r, this.color.g, this.color.b);
+    // ellipse(this.position.x, this.position.y, this.particleSize);
   }	
 }
