@@ -14,8 +14,9 @@
 // Todo:
 // X make lead not wander when near edges
 // X draw green box representing edgeBuffer
-// make follower "see" the lead, and distance check before following
-// make follower wander when it can't see the lead
+// X make follower "see" the lead, and distance check before following
+// X make follower wander when it can't see the lead
+// make follower pick best available spot (ie closest bird, but left or right side)
 // make follower be able to see across window edges so it doesn't zoom off
 // make lead "get tired" so it can become a follower
 
